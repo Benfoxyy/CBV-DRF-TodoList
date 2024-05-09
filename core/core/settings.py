@@ -25,7 +25,7 @@ SECRET_KEY = Config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = Config('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -39,6 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'accounts',
     'main',
+    'rest_framework',
+    'django_filters',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [
