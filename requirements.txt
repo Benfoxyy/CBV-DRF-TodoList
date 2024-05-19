@@ -1,5 +1,0 @@
-django>3.2,<3.3
-python-decouple
-djangorestframework
-django-filter==2.4
-drf-yasg[validation]
