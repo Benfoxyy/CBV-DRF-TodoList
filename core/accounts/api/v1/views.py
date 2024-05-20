@@ -1,11 +1,15 @@
 from rest_framework import status
 from rest_framework import generics
 from rest_framework.response import Response
-from .serializers import RegistrationSerializer,CustomAuthTokenSerializer,CustomTokenObtainPairSerializer
+from rest_framework.permissions import IsAuthenticated
+from .serializers import RegistrationSerializer,CustomAuthTokenSerializer,CustomTokenObtainPairSerializer,ChangePasswordApiSerializer
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 class RegistrationApi(generics.GenericAPIView):
     serializer_class = RegistrationSerializer
@@ -42,3 +46,27 @@ class DestroyToken(APIView):
     
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
+class ChangePasswordApi(generics.GenericAPIView):
+    model = get_user_model()
+    serializer_class = ChangePasswordApiSerializer
+    
+    def get_object(self):
+        obj = self.request.user
+        return obj
+    
+    def put(self,request,*args,**kwargs):
+        self.object = self.get_object()
+        serializer = self.get_serializer(data = request.data)
+        permission_classes = [IsAuthenticated]
+
+        if serializer.is_valid():
+            if not self.object.check_password(serializer.data.get('old_password')):
+                return Response({'old_password':['Wrong password']},status=status.HTTP_400_BAD_REQUEST)
+            self.object.set_password(serializer.data.get('new_password'))
+            self.object.save()
+            response = {'status':status.HTTP_200_OK,
+                        'message':'Password successfully changed'
+                        }
+            return Response(response)
+        return Response(status.errors,status=status.HTTP_400_BAD_REQUEST)
