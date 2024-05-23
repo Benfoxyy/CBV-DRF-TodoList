@@ -8,6 +8,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
+from mail_templated import send_mail
 
 User = get_user_model()
 
@@ -50,6 +51,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class ChangePasswordApi(generics.GenericAPIView):
     model = get_user_model()
     serializer_class = ChangePasswordApiSerializer
+    permission_classes = [IsAuthenticated]
     
     def get_object(self):
         obj = self.request.user
@@ -58,7 +60,7 @@ class ChangePasswordApi(generics.GenericAPIView):
     def put(self,request,*args,**kwargs):
         self.object = self.get_object()
         serializer = self.get_serializer(data = request.data)
-        permission_classes = [IsAuthenticated]
+        
 
         if serializer.is_valid():
             if not self.object.check_password(serializer.data.get('old_password')):
@@ -70,3 +72,8 @@ class ChangePasswordApi(generics.GenericAPIView):
                         }
             return Response(response)
         return Response(status.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+class VerifideTestView(generics.GenericAPIView):
+    def get(self, request,*args,**kwargs):
+        send_mail('email/hello.tpl', {'name': 'admin'}, 'benxfoxy@gmail.com', ['hrvfurfgrfgurf@gmail.com'])
+        return Response({'detail':'email sent'},status=status.HTTP_200_OK)

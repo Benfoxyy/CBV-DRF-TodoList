@@ -4,7 +4,7 @@ from .models import User
 
 class CustomUserAdmin(UserAdmin):
     model = User
-    list_display = ['email','is_superuser','is_staff']
+    list_display = ['email','is_superuser','is_staff','is_verified']
     ordering = ['email']
 
     fieldsets = (
@@ -15,7 +15,7 @@ class CustomUserAdmin(UserAdmin):
         }),
         ("Permission", {
             "fields":(
-                "is_superuser", "is_staff", "is_active",
+                "is_superuser", "is_staff", "is_active",'is_verified',
             ),
         }),
         ("Group Permission", {
@@ -33,7 +33,7 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = (
         ('From', {
             "fields": (
-                'email','password1','password2','is_staff','is_superuser','is_active',
+                'email','password1','password2','is_staff','is_superuser','is_active','is_verified',
             ),
         }),
     )

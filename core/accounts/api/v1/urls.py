@@ -10,4 +10,5 @@ urlpatterns = [
     path('token/logout/',views.DestroyToken.as_view(),name='logout-token'),
     path('jwt/create/',views.CustomTokenObtainPairView.as_view(),name='create-token'),
     path('jwt/refresh/',TokenRefreshView.as_view(),name='refresh-token'),
+    path('verifide_test/',views.VerifideTestView.as_view(),name='verifide-test'),
 ]

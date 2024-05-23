@@ -1,6 +1,8 @@
 django>3.2,<3.3
 python-decouple
 djangorestframework==3.14
+djangorestframework-simplejwt
 django-filter==2.4
 drf-yasg[validation]
 rest_framework_simplejwt
+django-mail-templated
