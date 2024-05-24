@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.views import TokenRefreshView,TokenVerifyView
 
 
 urlpatterns = [
@@ -10,5 +10,7 @@ urlpatterns = [
     path('token/logout/',views.DestroyToken.as_view(),name='logout-token'),
     path('jwt/create/',views.CustomTokenObtainPairView.as_view(),name='create-token'),
     path('jwt/refresh/',TokenRefreshView.as_view(),name='refresh-token'),
-    path('verifide_test/',views.VerifideTestView.as_view(),name='verifide-test'),
+    path('jwt/verify/',TokenVerifyView.as_view(),name='verify-token'),
+#    path('verifide_test/',views.VerifideTestView.as_view(),name='verifide-test'),
+    path('verify/conf/<str:token>',views.VerifyConf.as_view(),name='verify-conf'),
 ]

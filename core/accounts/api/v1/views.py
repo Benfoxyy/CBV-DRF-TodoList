@@ -7,9 +7,15 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from mail_templated import EmailMessage
 from ..utils import EmailThread
+from django.shortcuts import get_object_or_404
+import jwt
+from jwt.exceptions import InvalidSignatureError,ExpiredSignatureError
+from django.conf import settings
+
 
 User = get_user_model()
 
@@ -18,13 +24,21 @@ class RegistrationApi(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         serializer = RegistrationSerializer(data=request.data)
+        
         if serializer.is_valid():
+            email = serializer.validated_data['email']
             serializer.save()
-            data={
-                'email': serializer.validated_data['email']
-            }
-            return Response(data,status=status.HTTP_201_CREATED)
+            user_obj = get_object_or_404(User,email=email)
+            token = self.get_tokens_for_user(user_obj)
+            email_obj = EmailMessage('email/verification.tpl', {'token': token}, 'benxfoxy@gmail.com',to=[email])
+            EmailThread(email_obj).start()
+
+            return Response({'details':'verification code send'},status=status.HTTP_200_OK)
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+    def get_tokens_for_user(self,user_obj):
+        refresh = RefreshToken.for_user(user_obj)
+        return str(refresh.access_token)
         
 
 class CustomObtainToken(ObtainAuthToken):
@@ -74,9 +88,17 @@ class ChangePasswordApi(generics.GenericAPIView):
             return Response(response)
         return Response(status.errors,status=status.HTTP_400_BAD_REQUEST)
     
-class VerifideTestView(generics.GenericAPIView):
-    def get(self, request,*args,**kwargs):
-        email = EmailMessage('email/hello.tpl', {'name': 'benyamin'}, 'benxfoxy@gmail.com',to=['hrvfurfgrfgurf@gmail.com'])
-        EmailThread(email).start()
 
-        return Response({'detail':'email sent'},status=status.HTTP_200_OK)
+class VerifyConf(APIView):
+    def get(self,request,token,*args,**kwargs):
+        try:
+            token = (jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"]))
+        except InvalidSignatureError:
+            return Response({'detail':'Token is invalid'},status.HTTP_400_BAD_REQUEST) 
+        except ExpiredSignatureError:
+            return Response({'detail':'Token expired'},status.HTTP_400_BAD_REQUEST) 
+        #if user_obj:=User.objects.get(pk=token.get('user_id')):
+        user_obj = get_object_or_404(User,pk=token.get('user_id'))
+        user_obj.is_verified = True
+        user_obj.save()
+        return Response({'detail':'your verification successfully compleat!'},status=status.HTTP_201_CREATED)
