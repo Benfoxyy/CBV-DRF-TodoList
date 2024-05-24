@@ -8,7 +8,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
-from mail_templated import send_mail
+from mail_templated import EmailMessage
+from ..utils import EmailThread
 
 User = get_user_model()
 
@@ -75,5 +76,7 @@ class ChangePasswordApi(generics.GenericAPIView):
     
 class VerifideTestView(generics.GenericAPIView):
     def get(self, request,*args,**kwargs):
-        send_mail('email/hello.tpl', {'name': 'admin'}, 'benxfoxy@gmail.com', ['hrvfurfgrfgurf@gmail.com'])
+        email = EmailMessage('email/hello.tpl', {'name': 'benyamin'}, 'benxfoxy@gmail.com',to=['hrvfurfgrfgurf@gmail.com'])
+        EmailThread(email).start()
+
         return Response({'detail':'email sent'},status=status.HTTP_200_OK)
