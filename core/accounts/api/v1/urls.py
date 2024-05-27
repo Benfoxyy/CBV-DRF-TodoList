@@ -11,6 +11,8 @@ urlpatterns = [
     path('jwt/create/',views.CustomTokenObtainPairView.as_view(),name='create-token'),
     path('jwt/refresh/',TokenRefreshView.as_view(),name='refresh-token'),
     path('jwt/verify/',TokenVerifyView.as_view(),name='verify-token'),
-#    path('verifide_test/',views.VerifideTestView.as_view(),name='verifide-test'),
+    path('verify/resend/',views.ResendVerification.as_view(),name='verify-resend'),
+    #path('verifide_test/',views.VerifideTestView.as_view(),name='verifide-test'),
     path('verify/conf/<str:token>',views.VerifyConf.as_view(),name='verify-conf'),
+
 ]

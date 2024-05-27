@@ -2,7 +2,8 @@ from rest_framework import status
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .serializers import RegistrationSerializer,CustomAuthTokenSerializer,CustomTokenObtainPairSerializer,ChangePasswordApiSerializer
+from .serializers import (RegistrationSerializer,CustomAuthTokenSerializer,
+                          CustomTokenObtainPairSerializer,ChangePasswordApiSerializer,ResendVerificationSerializer)
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
 from rest_framework.views import APIView
@@ -89,6 +90,21 @@ class ChangePasswordApi(generics.GenericAPIView):
         return Response(status.errors,status=status.HTTP_400_BAD_REQUEST)
     
 
+class ResendVerification(generics.GenericAPIView):
+    serializer_class = ResendVerificationSerializer
+    def post(self, request, *args, **kwargs):
+        serializer = ResendVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user_obj = serializer.validated_data['user']
+        token = self.get_tokens_for_user(user_obj)
+        message_obj = EmailMessage('email/verification.tpl', {'token': token}, 'benxfoxy@gmail.com',to=[user_obj.email])
+        EmailThread(message_obj).start()
+        return Response({'details': 'Verification token recend successfully'},status=status.HTTP_200_OK)
+
+    def get_tokens_for_user(self, user):
+        refresh = RefreshToken.for_user(user)
+        return str(refresh.access_token)
+
 class VerifyConf(APIView):
     def get(self,request,token,*args,**kwargs):
         try:
@@ -99,6 +115,8 @@ class VerifyConf(APIView):
             return Response({'detail':'Token expired'},status.HTTP_400_BAD_REQUEST) 
         #if user_obj:=User.objects.get(pk=token.get('user_id')):
         user_obj = get_object_or_404(User,pk=token.get('user_id'))
+        if user_obj.is_verified:
+            return Response({'detail':'your account is already verified'},status=status.HTTP_400_BAD_REQUEST)
         user_obj.is_verified = True
         user_obj.save()
         return Response({'detail':'your verification successfully compleat!'},status=status.HTTP_201_CREATED)
